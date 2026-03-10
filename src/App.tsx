@@ -3,17 +3,18 @@ import { useData } from './hooks/useData';
 import { TopBar } from './components/TopBar';
 import { Sidebar, TabId } from './components/Sidebar';
 import { ArenaMode } from './components/ArenaMode';
-import { OverviewTab } from './components/tabs/OverviewTab';
-import { FunnelTab } from './components/tabs/FunnelTab';
-import { CanalesTab } from './components/tabs/CanalesTab';
-import { ComercialesTab } from './components/tabs/ComercialesTab';
-import { SolucionesTab } from './components/tabs/SolucionesTab';
-import { ActividadTab } from './components/tabs/ActividadTab';
-import { PerdidasTab } from './components/tabs/PerdidasTab';
-import { CalidadTab } from './components/tabs/CalidadTab';
 import { ConfiguracionTab } from './components/tabs/ConfiguracionTab';
+import { MarketingTab } from './components/tabs/MarketingTab';
+import { FunnelTab } from './components/tabs/FunnelTab';
+import { RevenueMixTab } from './components/tabs/RevenueMixTab';
+import { SalesPerformanceTab } from './components/tabs/SalesPerformanceTab';
+import { ActivityTab } from './components/tabs/ActividadTab';
+import { LossReasonsTab } from './components/tabs/LossReasonsTab';
+import { SedesTab } from './components/tabs/SedesTab';
+import { CohortsTab } from './components/tabs/CohortsTab';
 import { SalesAnimation } from './components/SalesAnimation';
 import { Loader2, AlertCircle } from 'lucide-react';
+
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabId>('Arena');
@@ -61,31 +62,33 @@ export default function App() {
   }
 
   const renderContent = () => {
+
     switch (activeTab) {
       case 'Arena':
         return <ArenaMode data={filteredData} metrics={metrics} dateRange={filters.dateRange} config={config} />;
-      case 'Overview':
-        return <div className="p-6"><OverviewTab data={filteredData} metrics={metrics} /></div>;
+      case 'Marketing':
+        return <div className="p-6"><MarketingTab data={filteredData} metrics={metrics} /></div>;
       case 'Funnel':
-        return <div className="p-6"><FunnelTab data={filteredData} /></div>;
-      case 'Canales':
-        return <div className="p-6"><CanalesTab data={filteredData} /></div>;
-      case 'Comerciales':
-        return <div className="p-6"><ComercialesTab data={filteredData} /></div>;
-      case 'Soluciones':
-        return <div className="p-6"><SolucionesTab data={filteredData} /></div>;
-      case 'Actividad':
-        return <div className="p-6"><ActividadTab data={filteredData} metrics={metrics} /></div>;
-      case 'Perdidas':
-        return <div className="p-6"><PerdidasTab data={filteredData} /></div>;
-      case 'Calidad':
-        return <div className="p-6"><CalidadTab data={filteredData} /></div>;
+        return <div className="p-6"><FunnelTab data={filteredData} metrics={metrics} /></div>;
+      case 'RevenueMix':
+        return <div className="p-6"><RevenueMixTab metrics={metrics} data={filteredData} /></div>;
+      case 'SalesPerformance':
+        return <div className="p-6"><SalesPerformanceTab metrics={metrics} /></div>;
+      case 'Activity':
+        return <div className="p-6"><ActivityTab data={filteredData} metrics={metrics} /></div>;
+      case 'LossReasons':
+        return <div className="p-6"><LossReasonsTab metrics={metrics} /></div>;
+      case 'Sedes':
+        return <div className="p-6"><SedesTab data={filteredData} metrics={metrics} /></div>;
+      case 'Cohorts':
+        return <div className="p-6"><CohortsTab data={filteredData} metrics={metrics} /></div>;
       case 'Configuracion':
         return <div className="p-6"><ConfiguracionTab config={config} setConfig={setConfig} comerciales={filterOptions.comerciales} /></div>;
       default:
         return null;
     }
   };
+
 
   return (
     <div className="min-h-screen bg-slate-50 flex overflow-hidden">

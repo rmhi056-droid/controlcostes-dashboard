@@ -25,15 +25,16 @@ interface SidebarProps {
 export function Sidebar({ activeTab, setActiveTab, isOpen, setIsOpen }: SidebarProps) {
   const menuItems = [
     { id: 'Arena', label: 'La Arena', icon: Monitor, isPrimary: true },
-    { id: 'Overview', label: 'Overview', icon: LayoutDashboard },
-    { id: 'Funnel', label: 'El Embudo', icon: Filter },
-    { id: 'Canales', label: 'Canales', icon: Activity },
-    { id: 'Comerciales', label: 'Comerciales', icon: Users },
-    { id: 'Soluciones', label: 'Soluciones', icon: Briefcase },
-    { id: 'Actividad', label: 'Actividad', icon: Activity },
-    { id: 'Perdidas', label: 'Pérdidas', icon: AlertTriangle },
-    { id: 'Calidad', label: 'Calidad', icon: CheckCircle },
+    { id: 'Marketing', label: 'Control Campañas', icon: Activity },
+    { id: 'Funnel', label: 'Embudo y Conv.', icon: Filter },
+    { id: 'RevenueMix', label: 'Ingresos & Mix', icon: Briefcase },
+    { id: 'SalesPerformance', label: 'Rendimiento Com.', icon: Users },
+    { id: 'Activity', label: 'Actividad & Cont.', icon: Activity },
+    { id: 'LossReasons', label: 'Motivos Pérdida', icon: AlertTriangle },
+    { id: 'Sedes', label: 'Subcuentas/Sedes', icon: LayoutDashboard },
+    { id: 'Cohorts', label: 'Cohortes y Tiempos', icon: CheckCircle },
   ];
+
 
   const bottomItems = [
     { id: 'Configuracion', label: 'Configuración', icon: Settings },

@@ -69,10 +69,9 @@ export function useData() {
     const interval = setInterval(loadData, 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, []);
-
   const filteredData = useMemo(() => {
     const now = new Date();
-    let startDate: Date;
+    let startDate = new Date(0);
     let endDate = endOfDay(now);
 
     switch (filters.dateRange) {
@@ -95,10 +94,13 @@ export function useData() {
         break;
     }
 
-    return data.filter((lead) => {
+    return (Array.isArray(data) ? data : []).filter((lead: any) => {
       // Date filter (use fechaRegistro or fechaCierre)
-      const dateToUse = lead.fechaCierre || lead.fechaRegistro;
-      if (dateToUse && !isWithinInterval(dateToUse, { start: startDate, end: endDate })) {
+      const raw = lead.fechaCierre || lead.fechaRegistro;
+      const date = raw instanceof Date ? raw : (typeof raw === "string" ? new Date(raw) : null);
+
+
+      if (date && !isNaN(date.getTime()) && !isWithinInterval(date, { start: startDate, end: endDate })) {
         return false;
       }
 
@@ -112,21 +114,20 @@ export function useData() {
       return true;
     });
   }, [data, filters]);
-
   const metrics = useMemo<Metrics>(() => {
     const leadsTotales = filteredData.length;
     const ganados = filteredData.filter((l) => l.estado === 'Ganado').length;
     const perdidos = filteredData.filter((l) => l.estado === 'Perdido').length;
     const abiertos = filteredData.filter((l) => l.estado === 'Abierto').length;
     const winRate = ganados + perdidos > 0 ? ganados / (ganados + perdidos) : 0;
-    
+
     const ingresosTotales = filteredData.reduce((sum, l) => sum + (l.estado === 'Ganado' ? l.ingresos : 0), 0);
     const ticketMedio = ganados > 0 ? ingresosTotales / ganados : 0;
     const ingresoPorLead = leadsTotales > 0 ? ingresosTotales / leadsTotales : 0;
-    
+
     const ganadosConTiempo = filteredData.filter(l => l.estado === 'Ganado' && l.tiempoGanarse > 0);
-    const tiempoMedioGanar = ganadosConTiempo.length > 0 
-      ? ganadosConTiempo.reduce((sum, l) => sum + l.tiempoGanarse, 0) / ganadosConTiempo.length 
+    const tiempoMedioGanar = ganadosConTiempo.length > 0
+      ? ganadosConTiempo.reduce((sum, l) => sum + l.tiempoGanarse, 0) / ganadosConTiempo.length
       : 0;
 
     const callsOutTotal = filteredData.reduce((sum, l) => sum + l.llamadasSalientes, 0);
@@ -135,6 +136,158 @@ export function useData() {
     const callDurationTotal = filteredData.reduce((sum, l) => sum + l.duracionLlamada, 0);
     const actividadTotalSimple = callsOutTotal + waTotal;
     const actividadMediaPorLead = leadsTotales > 0 ? actividadTotalSimple / leadsTotales : 0;
+
+    const leadsPorCanal: Record<string, number> = {};
+    const ingresosPorCanal: Record<string, number> = {};
+    const ganadosPorCanal: Record<string, number> = {};
+    const perdidosPorCanal: Record<string, number> = {};
+    const actividadPorCanal: Record<string, number> = {};
+
+    const conteoPorEtapa: Record<string, number> = {};
+    const ingresosPorSolucion: Record<string, number> = {};
+    const ingresosPorSubcuenta: Record<string, number> = {};
+    const ingresosPorComercial: Record<string, number> = {};
+    const agingLeads = { '0-2 días': 0, '3-7 días': 0, '8-14 días': 0, '+15 días': 0 };
+    const statsComerciales: Record<string, any> = {};
+
+    const now = new Date();
+
+    let valorPipelineAbierto = 0;
+    const ingresosMensuales: Record<string, number> = {};
+
+    filteredData.forEach(l => {
+      // Marketing
+      const canal = l.atribucion || 'Desconocido';
+      leadsPorCanal[canal] = (leadsPorCanal[canal] || 0) + 1;
+      actividadPorCanal[canal] = (actividadPorCanal[canal] || 0) + (l.llamadasSalientes + l.whatsapp);
+
+      if (l.estado === 'Ganado') {
+        ingresosPorCanal[canal] = (ingresosPorCanal[canal] || 0) + l.ingresos;
+        ganadosPorCanal[canal] = (ganadosPorCanal[canal] || 0) + 1;
+
+        // Serie temporal (usamos fecha de cierre o registro)
+        const d = l.fechaCierre || l.fechaRegistro;
+        if (d) {
+          const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+          ingresosMensuales[monthKey] = (ingresosMensuales[monthKey] || 0) + l.ingresos;
+        }
+      } else if (l.estado === 'Perdido') {
+        perdidosPorCanal[canal] = (perdidosPorCanal[canal] || 0) + 1;
+      }
+
+      // Embudo
+      const etapa = l.etapa || 'Sin Etapa';
+      conteoPorEtapa[etapa] = (conteoPorEtapa[etapa] || 0) + 1;
+
+      // Mix
+      if (l.estado === 'Ganado') {
+        ingresosPorSolucion[l.solucion] = (ingresosPorSolucion[l.solucion] || 0) + l.ingresos;
+        ingresosPorSubcuenta[l.subcuenta] = (ingresosPorSubcuenta[l.subcuenta] || 0) + l.ingresos;
+        ingresosPorComercial[l.comercial] = (ingresosPorComercial[l.comercial] || 0) + l.ingresos;
+      }
+
+      // Aging & Pipeline Value
+      if (l.estado === 'Abierto') {
+        valorPipelineAbierto += (l.ingresos || 0);
+        if (l.fechaRegistro) {
+          const diffDays = Math.floor((now.getTime() - l.fechaRegistro.getTime()) / (1000 * 60 * 60 * 24));
+          if (diffDays <= 2) agingLeads['0-2 días']++;
+          else if (diffDays <= 7) agingLeads['3-7 días']++;
+          else if (diffDays <= 14) agingLeads['8-14 días']++;
+          else agingLeads['+15 días']++;
+        }
+      }
+
+      // Stats Comerciales
+      const c = l.comercial || 'Sin Asignar';
+      if (!statsComerciales[c]) {
+        statsComerciales[c] = { ganados: 0, perdidos: 0, abiertos: 0, ingresos: 0, tiempos: [], calls: 0, wa: 0, leads: 0 };
+      }
+      const s = statsComerciales[c];
+      s.leads++;
+      s.calls += l.llamadasSalientes;
+      s.wa += l.whatsapp;
+      if (l.estado === 'Ganado') {
+        s.ganados++;
+        s.ingresos += l.ingresos;
+        if (l.tiempoGanarse > 0) s.tiempos.push(l.tiempoGanarse);
+      } else if (l.estado === 'Perdido') {
+        s.perdidos++;
+      } else {
+        s.abiertos++;
+      }
+    });
+
+    // Marketing Pro Calculations
+    const rplPorCanal: Record<string, number> = {};
+    const winRatePorCanal: Record<string, number> = {};
+    const calidadPorCanal: Record<string, any> = {};
+
+    Object.keys(leadsPorCanal).forEach(canal => {
+      rplPorCanal[canal] = ingresosPorCanal[canal] / leadsPorCanal[canal];
+      const g = ganadosPorCanal[canal] || 0;
+      const p = perdidosPorCanal[canal] || 0;
+      winRatePorCanal[canal] = g + p > 0 ? g / (g + p) : 0;
+
+      calidadPorCanal[canal] = {
+        mediaActividad: actividadPorCanal[canal] / leadsPorCanal[canal],
+        tiempoMedioCierre: 0,
+        pctCualificacion: 0,
+      };
+    });
+
+    const finalStatsComerciales: Record<string, any> = {};
+    Object.keys(statsComerciales).forEach(c => {
+      const s = statsComerciales[c];
+      finalStatsComerciales[c] = {
+        ganados: s.ganados,
+        perdidos: s.perdidos,
+        abiertos: s.abiertos,
+        ingresos: s.ingresos,
+        winRate: s.ganados + s.perdidos > 0 ? s.ganados / (s.ganados + s.perdidos) : 0, 
+        winRateCalculated: s.ganados + s.perdidos > 0 ? s.ganados / (s.ganados + s.perdidos) : 0,
+        tiempoMedioVenta: s.tiempos.length > 0 ? s.tiempos.reduce((a: any, b: any) => a + b, 0) / s.tiempos.length : 0,
+        llamadasPorLead: s.leads > 0 ? s.calls / s.leads : 0,
+        whatsappPorLead: s.leads > 0 ? s.wa / s.leads : 0,
+      };
+      // Correction: winRate in finalStats should use Calculated one
+      finalStatsComerciales[c].winRate = finalStatsComerciales[c].winRateCalculated;
+    });
+
+    const motivosPorCanal: Record<string, Record<string, number>> = {};
+    const motivosPorComercial: Record<string, Record<string, number>> = {};
+    const motivosConteos: Record<string, number> = {};
+
+    filteredData.forEach(l => {
+      if (l.estado === 'Perdido' && l.motivoPerdida) {
+        const canal = l.atribucion || 'Desconocido';
+        const comercial = l.comercial || 'Sin Asignar';
+        const motivo = l.motivoPerdida;
+
+        motivosConteos[motivo] = (motivosConteos[motivo] || 0) + 1;
+
+        if (!motivosPorCanal[canal]) motivosPorCanal[canal] = {};
+        motivosPorCanal[canal][motivo] = (motivosPorCanal[canal][motivo] || 0) + 1;
+
+        if (!motivosPorComercial[comercial]) motivosPorComercial[comercial] = {};
+        motivosPorComercial[comercial][motivo] = (motivosPorComercial[comercial][motivo] || 0) + 1;
+      }
+    });
+
+    const topMotivos = Object.entries(motivosConteos)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 10);
+
+    const conversionPorEtapa: Record<string, number> = {};
+    // Simple conversion: current stage / total leads
+    Object.keys(conteoPorEtapa).forEach(e => {
+      conversionPorEtapa[e] = conteoPorEtapa[e] / leadsTotales;
+    });
+
+    const serieTemporalIngresos = Object.entries(ingresosMensuales)
+      .map(([date, value]) => ({ date, value }))
+      .sort((a, b) => a.date.localeCompare(b.date));
 
     return {
       leadsTotales,
@@ -152,7 +305,29 @@ export function useData() {
       callDurationTotal,
       actividadTotalSimple,
       actividadMediaPorLead,
+      leadsPorCanal,
+      ingresosPorCanal,
+      rplPorCanal,
+      winRatePorCanal,
+      calidadPorCanal,
+      conteoPorEtapa,
+      conversionPorEtapa,
+      valorPipelineAbierto,
+      agingLeads,
+      ingresosPorSolucion,
+      ingresosPorSubcuenta,
+      ingresosPorComercial,
+      serieTemporalIngresos,
+      statsComerciales: finalStatsComerciales,
+      motivosPorCanal,
+      motivosPorComercial,
+      topMotivos,
     };
+
+
+
+
+
   }, [filteredData]);
 
   // Extract unique values for filters

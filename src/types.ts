@@ -78,7 +78,55 @@ export interface Metrics {
   callDurationTotal: number;
   actividadTotalSimple: number;
   actividadMediaPorLead: number;
+
+  // Métricas Pro / Marketing
+  leadsPorCanal: Record<string, number>;
+  ingresosPorCanal: Record<string, number>;
+  rplPorCanal: Record<string, number>; // Revenue Per Lead
+  winRatePorCanal: Record<string, number>;
+  calidadPorCanal: Record<string, {
+    mediaActividad: number;
+    tiempoMedioCierre: number;
+    pctCualificacion: number;
+  }>;
+
+  // Embudo & Pipeline
+  conteoPorEtapa: Record<string, number>;
+  conversionPorEtapa: Record<string, number>;
+  valorPipelineAbierto: number;
+  agingLeads: {
+    '0-2 días': number;
+    '3-7 días': number;
+    '8-14 días': number;
+    '+15 días': number;
+  };
+
+  // Ingresos & Mix
+  ingresosPorSolucion: Record<string, number>;
+  ingresosPorSubcuenta: Record<string, number>;
+  ingresosPorComercial: Record<string, number>;
+  serieTemporalIngresos: { date: string; value: number }[];
+
+  // Rendimiento Comercial
+  statsComerciales: Record<string, {
+    ganados: number;
+    perdidos: number;
+    abiertos: number;
+    ingresos: number;
+    winRate: number;
+    tiempoMedioVenta: number;
+    llamadasPorLead: number;
+    whatsappPorLead: number;
+  }>;
+
+  // Motivos de Pérdida
+  motivosPorCanal: Record<string, Record<string, number>>;
+  motivosPorComercial: Record<string, Record<string, number>>;
+  topMotivos: { name: string; value: number }[];
 }
+
+
+
 
 export interface AppConfig {
   metas: {
