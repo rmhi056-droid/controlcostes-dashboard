@@ -20,7 +20,8 @@
 - [x] Tab 7: Subcuentas / sedes (Operación regional)
 - [x] Tab 8: Cohortes y tiempos (Velocidad y previsión)
 
-*Nota: Todas las pestañas están plenamente operativas, integradas con el motor de datos y respetando los filtros globales. El servidor local está configurado y verificado.*
+- [x] Sincronización con GitHub (Commit & Push)
+- [ ] Despliegue en Vercel (Producción)
 
 *Nota: El routing para las 8 pestañas ha sido configurado. La Pestaña 1 ya muestra datos reales y KPIs avanzados calculados desde `useData.ts`.*
 

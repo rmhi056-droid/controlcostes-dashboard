@@ -51,7 +51,7 @@ export default function App() {
         <AlertCircle className="mb-4" size={48} />
         <p className="text-lg font-medium">Error al cargar datos</p>
         <p className="text-sm text-slate-500 mt-2">{error}</p>
-        <button 
+        <button
           onClick={loadData}
           className="mt-6 px-4 py-2 bg-teal-600 text-white rounded-lg font-medium hover:bg-teal-700 transition-colors"
         >
@@ -93,14 +93,14 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-50 flex overflow-hidden">
       <SalesAnimation data={data} config={config} />
-      
-      <Sidebar 
-        activeTab={activeTab} 
-        setActiveTab={setActiveTab} 
-        isOpen={isSidebarOpen} 
-        setIsOpen={setIsSidebarOpen} 
+
+      <Sidebar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        isOpen={isSidebarOpen}
+        setIsOpen={setIsSidebarOpen}
       />
-      
+
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
         <TopBar
           data={data}
@@ -111,7 +111,7 @@ export default function App() {
           onRefresh={loadData}
           onUpload={handleFileUpload}
         />
-        
+
         <main className="flex-1 overflow-y-auto bg-slate-50">
           {renderContent()}
         </main>
