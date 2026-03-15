@@ -1,19 +1,19 @@
 import React from 'react';
-import { 
-  LayoutDashboard, 
-  Filter, 
-  Activity, 
-  Users, 
-  Briefcase, 
-  AlertTriangle, 
-  CheckCircle, 
+import {
+  LayoutDashboard,
+  Filter,
+  Activity,
+  Users,
+  Briefcase,
+  AlertTriangle,
+  CheckCircle,
   Monitor,
   Settings,
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
 
-export type TabId = 'Arena' | 'Overview' | 'Funnel' | 'Canales' | 'Comerciales' | 'Soluciones' | 'Actividad' | 'Perdidas' | 'Calidad' | 'Configuracion';
+export type TabId = 'Arena' | 'Marketing' | 'Funnel' | 'RevenueMix' | 'SalesPerformance' | 'Activity' | 'LossReasons' | 'Sedes' | 'Cohorts' | 'Configuracion';
 
 interface SidebarProps {
   activeTab: TabId;
@@ -41,13 +41,12 @@ export function Sidebar({ activeTab, setActiveTab, isOpen, setIsOpen }: SidebarP
   ];
 
   return (
-    <aside 
-      className={`bg-[#674c65] text-white/80 flex flex-col transition-all duration-300 relative ${
-        isOpen ? 'w-72' : 'w-20'
-      }`}
+    <aside
+      className={`bg-[#674c65] text-white/80 flex flex-col transition-all duration-300 relative ${isOpen ? 'w-72' : 'w-20'
+        }`}
     >
       {/* Toggle Button */}
-      <button 
+      <button
         onClick={() => setIsOpen(!isOpen)}
         className="absolute -right-3 top-6 bg-[#3d2c3c] text-white rounded-full p-1 shadow-lg hover:bg-[#2a1e29] z-50 border border-white/10"
       >
@@ -80,7 +79,7 @@ export function Sidebar({ activeTab, setActiveTab, isOpen, setIsOpen }: SidebarP
       {/* Main Menu */}
       <div className="flex-1 overflow-y-auto py-6 flex flex-col gap-1 px-3">
         {isOpen && <div className="text-xs font-semibold text-white/50 mb-2 px-3 uppercase tracking-wider">Menú Principal</div>}
-        
+
         {menuItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
@@ -90,10 +89,10 @@ export function Sidebar({ activeTab, setActiveTab, isOpen, setIsOpen }: SidebarP
               onClick={() => setActiveTab(item.id as TabId)}
               className={`
                 flex items-center gap-3 px-3 py-3 rounded-xl transition-all
-                ${isActive 
-                  ? item.isPrimary 
-                    ? 'bg-[#3d2c3c] text-white shadow-lg border border-white/10' 
-                    : 'bg-white/10 text-white' 
+                ${isActive
+                  ? item.isPrimary
+                    ? 'bg-[#3d2c3c] text-white shadow-lg border border-white/10'
+                    : 'bg-white/10 text-white'
                   : 'hover:bg-white/5 hover:text-white'
                 }
                 ${!isOpen && 'justify-center'}

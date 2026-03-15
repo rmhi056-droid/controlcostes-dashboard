@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { Metrics } from '../../types';
-import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, 
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
   ResponsiveContainer, ScatterChart, Scatter, ZAxis
 } from 'recharts';
 import { Trophy, Users, Zap, Award } from 'lucide-react';
@@ -76,8 +76,8 @@ export function SalesPerformanceTab({ metrics }: SalesPerformanceTabProps) {
               <BarChart data={rankingData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                 <XAxis dataKey="name" axisLine={false} tickLine={false} />
-                <YAxis hide Bos />
-                <Tooltip 
+                <YAxis hide />
+                <Tooltip
                   formatter={(val: number) => val.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
                   contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
                 />
