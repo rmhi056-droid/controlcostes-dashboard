@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { AppConfig } from '../../types';
-import { Save, User, Target } from 'lucide-react';
+import { Save, User, Target, Mail } from 'lucide-react';
 
 interface ConfiguracionTabProps {
   config: AppConfig;
@@ -19,23 +19,15 @@ export function ConfiguracionTab({ config, setConfig, comerciales }: Configuraci
   };
 
   const handlePhotoChange = (comercial: string, url: string) => {
-    setLocalConfig(prev => ({
-      ...prev,
-      comercialesPhotos: {
-        ...prev.comercialesPhotos,
-        [comercial]: url
-      }
-    }));
+    setLocalConfig(prev => ({ ...prev, comercialesPhotos: { ...prev.comercialesPhotos, [comercial]: url } }));
+  };
+
+  const handleEmailChange = (comercial: string, email: string) => {
+    setLocalConfig(prev => ({ ...prev, comercialesEmails: { ...prev.comercialesEmails, [comercial]: email } }));
   };
 
   const handleMetaChange = (key: 'ingresos' | 'ganados', value: number) => {
-    setLocalConfig(prev => ({
-      ...prev,
-      metas: {
-        ...prev.metas,
-        [key]: value
-      }
-    }));
+    setLocalConfig(prev => ({ ...prev, metas: { ...prev.metas, [key]: value } }));
   };
 
   return (
@@ -47,15 +39,14 @@ export function ConfiguracionTab({ config, setConfig, comerciales }: Configuraci
           className="flex items-center gap-2 bg-teal-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-teal-700 transition-colors shadow-sm"
         >
           <Save size={18} />
-          {saved ? 'Guardado!' : 'Guardar Cambios'}
+          {saved ? '¡Guardado!' : 'Guardar Cambios'}
         </button>
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         <div className="p-6 border-b border-slate-100 bg-slate-50/50">
           <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-            <Target className="text-teal-500" />
-            Metas Mensuales (Modo Arena)
+            <Target className="text-teal-500" /> Metas Mensuales (Modo Arena)
           </h3>
           <p className="text-sm text-slate-500 mt-1">Configura los objetivos que se mostrarán en la pantalla de la Arena.</p>
         </div>
@@ -65,7 +56,7 @@ export function ConfiguracionTab({ config, setConfig, comerciales }: Configuraci
             <input
               type="number"
               value={localConfig.metas.ingresos}
-              onChange={(e) => handleMetaChange('ingresos', Number(e.target.value))}
+              onChange={e => handleMetaChange('ingresos', Number(e.target.value))}
               className="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none"
             />
           </div>
@@ -74,7 +65,7 @@ export function ConfiguracionTab({ config, setConfig, comerciales }: Configuraci
             <input
               type="number"
               value={localConfig.metas.ganados}
-              onChange={(e) => handleMetaChange('ganados', Number(e.target.value))}
+              onChange={e => handleMetaChange('ganados', Number(e.target.value))}
               className="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none"
             />
           </div>
@@ -84,10 +75,9 @@ export function ConfiguracionTab({ config, setConfig, comerciales }: Configuraci
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         <div className="p-6 border-b border-slate-100 bg-slate-50/50">
           <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-            <User className="text-teal-500" />
-            Fotos de Comerciales
+            <User className="text-teal-500" /> Comerciales
           </h3>
-          <p className="text-sm text-slate-500 mt-1">Añade la URL de la foto para cada comercial. Se mostrará en el Leaderboard de la Arena.</p>
+          <p className="text-sm text-slate-500 mt-1">Foto para el leaderboard y email para el envío de informes.</p>
         </div>
         <div className="p-6">
           {comerciales.length === 0 ? (
@@ -95,9 +85,9 @@ export function ConfiguracionTab({ config, setConfig, comerciales }: Configuraci
           ) : (
             <div className="space-y-4">
               {comerciales.map(comercial => (
-                <div key={comercial} className="flex items-center gap-4 p-4 border border-slate-100 rounded-xl bg-slate-50/30">
-                  <div className="w-12 h-12 rounded-full bg-slate-200 overflow-hidden flex-shrink-0 border-2 border-white shadow-sm">
-                    {localConfig.comercialesPhotos[comercial] ? (
+                <div key={comercial} className="flex items-start gap-4 p-4 border border-slate-100 rounded-xl bg-slate-50/30">
+                  <div className="w-12 h-12 rounded-full bg-slate-200 overflow-hidden flex-shrink-0 border-2 border-white shadow-sm mt-1">
+                    {localConfig.comercialesPhotos?.[comercial] ? (
                       <img src={localConfig.comercialesPhotos[comercial]} alt={comercial} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold text-lg">
@@ -105,15 +95,28 @@ export function ConfiguracionTab({ config, setConfig, comerciales }: Configuraci
                       </div>
                     )}
                   </div>
-                  <div className="flex-1">
-                    <label className="block text-sm font-bold text-slate-700 mb-1">{comercial}</label>
-                    <input
-                      type="text"
-                      placeholder="https://ejemplo.com/foto.jpg"
-                      value={localConfig.comercialesPhotos[comercial] || ''}
-                      onChange={(e) => handlePhotoChange(comercial, e.target.value)}
-                      className="w-full border border-slate-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none"
-                    />
+                  <div className="flex-1 space-y-2">
+                    <label className="block text-sm font-bold text-slate-700">{comercial}</label>
+                    <div className="flex items-center gap-2">
+                      <User size={14} className="text-slate-400 flex-shrink-0" />
+                      <input
+                        type="text"
+                        placeholder="URL foto (https://...)"
+                        value={localConfig.comercialesPhotos?.[comercial] || ''}
+                        onChange={e => handlePhotoChange(comercial, e.target.value)}
+                        className="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Mail size={14} className="text-slate-400 flex-shrink-0" />
+                      <input
+                        type="email"
+                        placeholder="Email para informes"
+                        value={localConfig.comercialesEmails?.[comercial] || ''}
+                        onChange={e => handleEmailChange(comercial, e.target.value)}
+                        className="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none"
+                      />
+                    </div>
                   </div>
                 </div>
               ))}
